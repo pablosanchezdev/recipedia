@@ -11,3 +11,17 @@ GET     /message                    controllers.AsyncController.message
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+
+
+# ~~~~~~~~~~~~~~~~~
+# Recipes resource
+# ~~~~~~~~~~~~~~~~~
+
+# Basic CRUD operations
+
+POST        /recipe                         controllers.RecipeController.createRecipe
+GET         /recipe/$id<[0-9]+>             controllers.RecipeController.retrieveRecipe(id: Long)
+PUT         /recipe/$id<[0-9]+>             controllers.RecipeController.updateRecipe(id: Long)
+DELETE      /recipe/$id<[0-9]+>             controllers.RecipeController.deleteRecipe(id: Long)
+
+GET         /recipes/$page<[0-9]+>          controllers.RecipeController.retrieveRecipeCollection(page: Integer)
