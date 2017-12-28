@@ -1,5 +1,6 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.ebean.PagedList;
 import models.Recipe;
@@ -55,15 +56,63 @@ public class RecipeController extends BaseController {
             return Results.status(409, form.errorsAsJson());
         }
 
-        Recipe newRecipe = form.get();
         if (Recipe.findById(id) == null) {
             return Results.notFound();
         }
 
+        Recipe newRecipe = form.get();
         newRecipe.setId(id);
         newRecipe.update();
 
         return Results.ok();
+    }
+
+    public Result partialUpdateRecipe(Long id) {
+        Recipe recipe = Recipe.findById(id);
+        if (recipe == null) {
+            return Results.notFound();
+        }
+
+        if (request().body() != null && request().body().asJson() != null) {
+            JsonNode body = request().body().asJson();
+            boolean modified = false;
+            if (body.has("name")) {
+                recipe.setName(body.get("name").asText());
+                modified = true;
+            }
+            if (body.has("description")) {
+                recipe.setDescription(body.get("description").asText());
+                modified = true;
+            }
+            if (body.has("steps")) {
+                recipe.setSteps(body.get("steps").asText());
+                modified = true;
+            }
+            if (body.has("kitchen")) {
+                recipe.setKitchen(body.get("kitchen").asText());
+                modified = true;
+            }
+            if (body.has("rations")) {
+                recipe.setRations(body.get("rations").asInt());
+                modified = true;
+            }
+            if (body.has("elaborationTime")) {
+                recipe.setElaborationTime(body.get("elaborationTime").asInt());
+                modified = true;
+            }
+            if (body.has("cookingTime")) {
+                recipe.setCookingTime(body.get("cookingTime").asInt());
+                modified = true;
+            }
+
+            if (modified) {
+                recipe.update();
+            }
+
+            return Results.ok();
+        }
+
+        return Results.badRequest();
     }
 
     public Result deleteRecipe(Long id) {
