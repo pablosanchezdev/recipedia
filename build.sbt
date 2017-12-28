@@ -17,3 +17,9 @@ libraryDependencies += "org.awaitility" % "awaitility" % "2.0.0" % Test
 
 // Make verbose tests
 testOptions in Test := Seq(Tests.Argument(TestFrameworks.JUnit, "-a", "-v"))
+
+enablePlugins(PlayEbean)
+libraryDependencies += evolutions
+
+// h2 driver
+libraryDependencies += "com.h2database" % "h2" % "1.4.194"
