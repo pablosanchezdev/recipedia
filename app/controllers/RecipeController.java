@@ -26,7 +26,7 @@ public class RecipeController extends BaseController {
             return Results.created();
         } else {
             return Results.status(409,
-                    new ErrorObject("1", "The recipe already exists").toJson());
+                    new ErrorObject("1", getMessage("duplicate_recipe")).toJson());
         }
     }
 

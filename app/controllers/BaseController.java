@@ -10,4 +10,8 @@ class BaseController extends Controller {
 
     @Inject
     FormFactory formFactory;
+
+    String getMessage(String key) {
+        return Http.Context.current().messages().at(key);
+    }
 }
