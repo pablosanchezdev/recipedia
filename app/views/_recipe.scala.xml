@@ -1,0 +1,20 @@
+@(r: Recipe)
+
+<recipe>
+    <id>@r.getId()</id>
+    <name>@r.getName()</name>
+    <description>@r.getDescription()</description>
+    <steps>@r.getSteps()</steps>
+    <author>@r.getAuthor()</author>
+    <kitchen>@r.getKitchen()</kitchen>
+    <rations>@r.getRations()</rations>
+    <elaborationTime>@r.getElaborationTime()</elaborationTime>
+    <cookingTime>@r.getCookingTime()</cookingTime>
+    @if(!r.getIngredients().isEmpty()) {
+        <ingredients>
+            @for(i <- r.getIngredients()) {
+                @_ingredient(i)
+            }
+        </ingredients>
+    }
+</recipe>

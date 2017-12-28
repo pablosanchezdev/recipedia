@@ -1,0 +1,11 @@
+@(page: Integer, total: Integer, recipes: List[Recipe])
+
+@_header()
+
+<page>@page</page>
+<total>@total</total>
+<recipes>
+    @for(r <- recipes) {
+        @_recipe(r)
+    }
+</recipes>

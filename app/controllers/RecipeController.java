@@ -37,7 +37,13 @@ public class RecipeController extends BaseController {
             return Results.notFound();
         }
 
-        return Results.ok(recipe.toJson());
+        if (request().accepts("application/json")) {
+            return Results.ok(recipe.toJson());
+        } else if (request().accepts("application/xml")) {
+            return Results.ok(views.xml.recipe.render(recipe));
+        } else {
+            return Results.status(415);
+        }
     }
 
     public Result updateRecipe(Long id) {
@@ -75,11 +81,16 @@ public class RecipeController extends BaseController {
         PagedList<Recipe> list = Recipe.findAll(page);
         List<Recipe> recipes = list.getList();
 
-        ObjectNode json = Json.newObject();
-        json.put("page", page);
-        json.put("total", list.getTotalCount());
-        json.putPOJO("recipes", recipes);
-
-        return Results.ok(json);
+        if (request().accepts("application/json")) {
+            ObjectNode json = Json.newObject();
+            json.put("page", page);
+            json.put("total", list.getTotalCount());
+            json.putPOJO("recipes", recipes);
+            return Results.ok(json);
+        } else if (request().accepts("application/xml")) {
+            return Results.ok(views.xml.recipes.render(page, list.getTotalCount(), recipes));
+        } else {
+            return Results.status(415);
+        }
     }
 }
