@@ -1,7 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import play.data.validation.Constraints.Required;
+import io.ebean.Finder;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
@@ -13,14 +13,27 @@ import java.util.List;
 @Table(name = "ingredients")
 public class Ingredient extends BaseModel {
 
-    @Required
     private String name;
 
     @ManyToMany(mappedBy = "ingredients")
     @JsonBackReference
     private List<Recipe> recipes = new ArrayList<>();
 
-    // Getters and setters
+    private static final Finder<Long, Ingredient> find =
+            new Finder<>(Ingredient.class);
+
+    public Ingredient() {
+        super();
+    }
+
+    public static Ingredient findByName(String name) {
+        return find
+                .query()
+                .where()
+                    .ieq("name", name)
+                .findOne();
+    }
+
     public String getName() {
         return name;
     }

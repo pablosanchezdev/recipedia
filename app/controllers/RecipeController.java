@@ -142,4 +142,24 @@ public class RecipeController extends BaseController {
             return Results.status(415);
         }
     }
+
+    public Result addIngredient(Long recipeId, String ingredient) {
+        Recipe recipe = Recipe.findById(recipeId);
+        if (recipe == null) {
+            return Results.notFound();
+        }
+
+        recipe.addIngredientAndSave(ingredient);
+
+        return Results.created();
+    }
+
+    public Result removeIngredient(Long recipeId, String ingredient) {
+        Recipe recipe = Recipe.findById(recipeId);
+        if (recipe != null) {
+            recipe.deleteIngredientAndSave(ingredient);
+        }
+
+        return Results.ok();
+    }
 }

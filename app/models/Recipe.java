@@ -48,7 +48,6 @@ public class Recipe extends BaseModel {
     @Min(1)
     private Integer cookingTime;
 
-    @Valid
     @ManyToMany(cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Ingredient> ingredients = new ArrayList<>();
@@ -58,7 +57,6 @@ public class Recipe extends BaseModel {
 
     private static final int PAGE_SIZE = 25;  // Number of recipes per page
 
-    // Find methods
     public static Recipe findById(Long id) {
         return find.byId(id);
     }
@@ -85,16 +83,50 @@ public class Recipe extends BaseModel {
             return false;
         }
 
+        checkRecipeIntegrity();
         this.save();
+
         return true;
     }
 
-    // Serializer method
+    private void checkRecipeIntegrity() {
+        if (!this.getIngredients().isEmpty()) {
+            this.getIngredients().clear();
+        }
+    }
+
+    public void addIngredientAndSave(String ingrName) {
+        Ingredient ingredient = Ingredient.findByName(ingrName);
+        if (ingredient == null) {
+            ingredient = new Ingredient();
+            ingredient.setName(camelCaseIngredient(ingrName));
+            ingredient.save();
+        }
+
+        ingredient.getRecipes().add(this);
+        this.getIngredients().add(ingredient);
+
+        this.save();
+    }
+
+    public void deleteIngredientAndSave(String ingrName) {
+        Ingredient ingredient = Ingredient.findByName(ingrName);
+        if (ingredient != null) {
+            ingredient.getRecipes().remove(this);
+            this.getIngredients().remove(ingredient);
+            this.update();
+        }
+    }
+
+    private String camelCaseIngredient(String ingrName) {
+        return ingrName.substring(0, 1).toUpperCase()
+                + ingrName.substring(1, ingrName.length()).toLowerCase();
+    }
+
     public JsonNode toJson() {
         return Json.toJson(this);
     }
 
-    // Getters and setters
     public String getName() {
         return name;
     }
