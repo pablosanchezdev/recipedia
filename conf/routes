@@ -31,3 +31,6 @@ GET         /recipes/$page<[0-9]+>              controllers.RecipeController.ret
 
 POST        /recipe/$id<[0-9]+>/ingredient/:i   controllers.RecipeController.addIngredient(id: Long, i)
 DELETE      /recipe/$id<[0-9]+>/ingredient/:i   controllers.RecipeController.removeIngredient(id: Long, i)
+
+POST        /recipe/$id<[0-9]+>/tag/:tagName    controllers.RecipeController.addTag(id: Long, tagName)
+DELETE      /recipe/$id<[0-9]+>/tag/:tagName    controllers.RecipeController.removeTag(id: Long, tagName)

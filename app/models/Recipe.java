@@ -52,6 +52,10 @@ public class Recipe extends BaseModel {
     @JsonManagedReference
     private List<Ingredient> ingredients = new ArrayList<>();
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Tag> tags = new ArrayList<>();
+
     private static final Finder<Long, Recipe> find =
             new Finder<>(Recipe.class);
 
@@ -93,13 +97,16 @@ public class Recipe extends BaseModel {
         if (!this.getIngredients().isEmpty()) {
             this.getIngredients().clear();
         }
+        if (!this.getTags().isEmpty()) {
+            this.getTags().clear();
+        }
     }
 
     public void addIngredientAndSave(String ingrName) {
         Ingredient ingredient = Ingredient.findByName(ingrName);
         if (ingredient == null) {
             ingredient = new Ingredient();
-            ingredient.setName(camelCaseIngredient(ingrName));
+            ingredient.setName(toCamelCase(ingrName));
             ingredient.save();
         }
 
@@ -118,9 +125,32 @@ public class Recipe extends BaseModel {
         }
     }
 
-    private String camelCaseIngredient(String ingrName) {
-        return ingrName.substring(0, 1).toUpperCase()
-                + ingrName.substring(1, ingrName.length()).toLowerCase();
+    public void addTagAndSave(String tagName) {
+        Tag tag = Tag.findByName(tagName);
+        if (tag == null) {
+            tag = new Tag();
+            tag.setName(toCamelCase(tagName));
+            tag.save();
+        }
+
+        tag.getRecipes().add(this);
+        this.getTags().add(tag);
+
+        this.save();
+    }
+
+    public void removeTagAndSave(String tagName) {
+        Tag tag = Tag.findByName(tagName);
+        if (tag != null) {
+            tag.getRecipes().remove(this);
+            this.getTags().remove(tag);
+            this.update();
+        }
+    }
+
+    private String toCamelCase(String string) {
+        return string.substring(0, 1).toUpperCase()
+                + string.substring(1, string.length()).toLowerCase();
     }
 
     public JsonNode toJson() {
@@ -197,5 +227,13 @@ public class Recipe extends BaseModel {
 
     public void setIngredients(List<Ingredient> ingredients) {
         this.ingredients = ingredients;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
     }
 }

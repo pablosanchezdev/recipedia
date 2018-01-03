@@ -1,0 +1,5 @@
+@(t: Tag)
+
+<tag>
+    <name>@t.getName()</name>
+</tag>

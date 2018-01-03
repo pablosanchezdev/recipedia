@@ -162,4 +162,24 @@ public class RecipeController extends BaseController {
 
         return Results.ok();
     }
+
+    public Result addTag(Long recipeId, String tagName) {
+        Recipe recipe = Recipe.findById(recipeId);
+        if (recipe == null) {
+            return Results.notFound();
+        }
+
+        recipe.addTagAndSave(tagName);
+
+        return Results.created();
+    }
+
+    public Result removeTag(Long recipeId, String tagName) {
+        Recipe recipe = Recipe.findById(recipeId);
+        if (recipe != null) {
+            recipe.removeTagAndSave(tagName);
+        }
+
+        return Results.ok();
+    }
 }
