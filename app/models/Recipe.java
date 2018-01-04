@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.ebean.Finder;
 import io.ebean.PagedList;
+import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.Range;
 import play.data.validation.Constraints.MaxLength;
-import play.data.validation.Constraints.Min;
 import play.data.validation.Constraints.Required;
 import play.libs.Json;
 
 import javax.persistence.*;
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,33 +19,39 @@ import java.util.List;
 public class Recipe extends BaseModel {
 
     @Required
+    @NotBlank
     private String name;
 
     @Required
+    @NotBlank
     @MaxLength(255)
     private String description;
 
     @Required
+    @NotBlank
     @Column(columnDefinition = "text")
     private String steps;
 
     @Required
+    @NotBlank
+    @MaxLength(255)
     private String author;
 
     @Required
-    @MaxLength(60)
+    @NotBlank
+    @MaxLength(255)
     private String kitchen;
 
     @Required
-    @Min(1)
+    @Range(min = 1, max = 256)
     private Integer rations;
 
     @Required
-    @Min(1)
+    @Range(min = 1, max = 512)
     private Integer elaborationTime;
 
     @Required
-    @Min(1)
+    @Range(min = 1, max = 512)
     private Integer cookingTime;
 
     @ManyToMany(cascade = CascadeType.ALL)

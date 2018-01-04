@@ -16,12 +16,16 @@ public class Review extends BaseModel {
 
     @Required
     @NotBlank
+    @MaxLength(255)
     private String comment;
 
     @Required
     @Range(min = 0, max = 5)
     private Float rating;
 
+    @Required
+    @NotBlank
+    @MaxLength(255)
     private String author;
 
     @ManyToOne
