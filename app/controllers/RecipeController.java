@@ -150,9 +150,15 @@ public class RecipeController extends BaseController {
             return Results.notFound();
         }
 
-        recipe.addIngredientAndSave(ingredient);
-
-        return Results.created();
+        if (recipe.validateIngredientAndSave(ingredient) == 0) {
+            return Results.created();
+        } else if (recipe.validateIngredientAndSave(ingredient) == 1) {
+            return Results.status(409,
+                    new ErrorObject("2", getMessage("duplicate_ingredient")).toJson());
+        } else {
+            return Results.status(409,
+                    new ErrorObject("3", getMessage("ingredient_too_long")).toJson());
+        }
     }
 
     public Result removeIngredient(Long recipeId, String ingredient) {
@@ -170,9 +176,15 @@ public class RecipeController extends BaseController {
             return Results.notFound();
         }
 
-        recipe.addTagAndSave(tagName);
-
-        return Results.created();
+        if (recipe.validateTagAndSave(tagName) == 0) {
+            return Results.created();
+        } else if (recipe.validateTagAndSave(tagName) == 1) {
+            return Results.status(409,
+                    new ErrorObject("4", getMessage("duplicate_tag")).toJson());
+        } else {
+            return Results.status(409,
+                    new ErrorObject("5", getMessage("tag_too_long")).toJson());
+        }
     }
 
     public Result removeTag(Long recipeId, String tagName) {
@@ -203,7 +215,7 @@ public class RecipeController extends BaseController {
             return Results.created();
         } else {
             return Results.status(409,
-                    new ErrorObject("2", getMessage("duplicate_review")).toJson());
+                    new ErrorObject("6", getMessage("duplicate_review")).toJson());
         }
     }
 }

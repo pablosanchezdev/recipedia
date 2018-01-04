@@ -112,7 +112,11 @@ public class Recipe extends BaseModel {
         }
     }
 
-    public void addIngredientAndSave(String ingrName) {
+    public int validateIngredientAndSave(String ingrName) {
+        if (ingrName.length() > 255) {
+            return -1;
+        }
+
         Ingredient ingredient = Ingredient.findByName(ingrName);
         if (ingredient == null) {
             ingredient = new Ingredient();
@@ -120,10 +124,16 @@ public class Recipe extends BaseModel {
             ingredient.save();
         }
 
+        if (ingredient.getRecipes().contains(this)
+                && this.getIngredients().contains(ingredient)) {
+            return 1;
+        }
+
         ingredient.getRecipes().add(this);
         this.getIngredients().add(ingredient);
-
         this.save();
+
+        return 0;
     }
 
     public void deleteIngredientAndSave(String ingrName) {
@@ -135,7 +145,11 @@ public class Recipe extends BaseModel {
         }
     }
 
-    public void addTagAndSave(String tagName) {
+    public int validateTagAndSave(String tagName) {
+        if (tagName.length() > 255) {
+            return -1;
+        }
+
         Tag tag = Tag.findByName(tagName);
         if (tag == null) {
             tag = new Tag();
@@ -143,10 +157,16 @@ public class Recipe extends BaseModel {
             tag.save();
         }
 
+        if (tag.getRecipes().contains(this)
+                && this.getTags().contains(tag)) {
+            return 1;
+        }
+
         tag.getRecipes().add(this);
         this.getTags().add(tag);
-
         this.save();
+
+        return 0;
     }
 
     public void removeTagAndSave(String tagName) {
