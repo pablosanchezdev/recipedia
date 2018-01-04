@@ -20,4 +20,9 @@
             @_tag(t)
         }
     </tags>
+    <reviews>
+        @for(r <- r.getReviews()) {
+            @_review(r)
+        }
+    </reviews>
 </recipe>

@@ -56,6 +56,10 @@ public class Recipe extends BaseModel {
     @JsonManagedReference
     private List<Tag> tags = new ArrayList<>();
 
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "recipe")
+    @JsonManagedReference
+    private List<Review> reviews = new ArrayList<>();
+
     private static final Finder<Long, Recipe> find =
             new Finder<>(Recipe.class);
 
@@ -148,6 +152,12 @@ public class Recipe extends BaseModel {
         }
     }
 
+    public boolean addReview(Review review) {
+        review.setRecipe(this);
+        this.getReviews().add(review);
+        return review.validateAndSave();
+    }
+
     private String toCamelCase(String string) {
         return string.substring(0, 1).toUpperCase()
                 + string.substring(1, string.length()).toLowerCase();
@@ -235,5 +245,13 @@ public class Recipe extends BaseModel {
 
     public void setTags(List<Tag> tags) {
         this.tags = tags;
+    }
+
+    public List<Review> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(List<Review> reviews) {
+        this.reviews = reviews;
     }
 }

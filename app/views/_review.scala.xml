@@ -1,0 +1,7 @@
+@(r: Review)
+
+<review>
+    <comment>@r.getComment()</comment>
+    <rating>@r.getRating()</rating>
+    <author>@r.getAuthor()</author>
+</review>

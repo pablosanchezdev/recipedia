@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.ebean.PagedList;
 import models.Recipe;
+import models.Review;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Result;
@@ -181,5 +182,28 @@ public class RecipeController extends BaseController {
         }
 
         return Results.ok();
+    }
+
+    public Result addReview(Long id) {
+        Form<Review> form = formFactory
+                .form(Review.class)
+                .bindFromRequest();
+
+        if (form.hasErrors()) {
+            return Results.status(409, form.errorsAsJson());
+        }
+
+        Recipe recipe = Recipe.findById(id);
+        if (recipe == null) {
+            return Results.notFound();
+        }
+
+        Review review = form.get();
+        if (recipe.addReview(review)) {
+            return Results.created();
+        } else {
+            return Results.status(409,
+                    new ErrorObject("2", getMessage("duplicate_review")).toJson());
+        }
     }
 }
