@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.Range;
@@ -51,6 +52,12 @@ public class Review extends BaseModel {
 
         this.save();
         return true;
+    }
+
+    @JsonIgnore
+    @Override
+    public Long getId() {
+        return super.getId();
     }
 
     public String getComment() {

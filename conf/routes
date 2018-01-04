@@ -14,7 +14,7 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 
 
 # ~~~~~~~~~~~~~~~~~
-# Recipes resource
+# Recipe resource
 # ~~~~~~~~~~~~~~~~~
 
 # Basic CRUD operations

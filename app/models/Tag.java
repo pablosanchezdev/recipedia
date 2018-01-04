@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 
 import javax.persistence.Entity;
@@ -32,6 +33,12 @@ public class Tag extends BaseModel {
                 .where()
                     .ieq("name", name)
                 .findOne();
+    }
+
+    @JsonIgnore
+    @Override
+    public Long getId() {
+        return super.getId();
     }
 
     public String getName() {
