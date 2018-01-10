@@ -3,8 +3,7 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.ebean.PagedList;
-import models.Recipe;
-import models.Review;
+import models.*;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Result;
@@ -20,7 +19,7 @@ public class RecipeController extends BaseController {
                 .bindFromRequest();
 
         if (form.hasErrors()) {
-            return Results.status(409, form.errorsAsJson());
+            return Results.badRequest(form.errorsAsJson());
         }
 
         Recipe recipe = form.get();
@@ -54,7 +53,7 @@ public class RecipeController extends BaseController {
                 .bindFromRequest();
 
         if (form.hasErrors()) {
-            return Results.status(409, form.errorsAsJson());
+            return Results.badRequest(form.errorsAsJson());
         }
 
         if (Recipe.findById(id) == null) {
@@ -97,12 +96,8 @@ public class RecipeController extends BaseController {
                 recipe.setRations(body.get("rations").asInt());
                 modified = true;
             }
-            if (body.has("elaborationTime")) {
-                recipe.setElaborationTime(body.get("elaborationTime").asInt());
-                modified = true;
-            }
-            if (body.has("cookingTime")) {
-                recipe.setCookingTime(body.get("cookingTime").asInt());
+            if (body.has("time")) {
+                recipe.setTime(body.get("time").asInt());
                 modified = true;
             }
 
@@ -150,14 +145,11 @@ public class RecipeController extends BaseController {
             return Results.notFound();
         }
 
-        if (recipe.validateIngredientAndSave(ingredient) == 0) {
+        if (recipe.validateIngredientAndSave(ingredient)) {
             return Results.created();
-        } else if (recipe.validateIngredientAndSave(ingredient) == 1) {
-            return Results.status(409,
-                    new ErrorObject("2", getMessage("duplicate_ingredient")).toJson());
         } else {
             return Results.status(409,
-                    new ErrorObject("3", getMessage("ingredient_too_long")).toJson());
+                    new ErrorObject("2", getMessage("duplicate_ingredient")).toJson());
         }
     }
 
@@ -176,14 +168,11 @@ public class RecipeController extends BaseController {
             return Results.notFound();
         }
 
-        if (recipe.validateTagAndSave(tagName) == 0) {
+        if (recipe.validateTagAndSave(tagName)) {
             return Results.created();
-        } else if (recipe.validateTagAndSave(tagName) == 1) {
-            return Results.status(409,
-                    new ErrorObject("4", getMessage("duplicate_tag")).toJson());
         } else {
             return Results.status(409,
-                    new ErrorObject("5", getMessage("tag_too_long")).toJson());
+                    new ErrorObject("3", getMessage("duplicate_tag")).toJson());
         }
     }
 
@@ -202,7 +191,7 @@ public class RecipeController extends BaseController {
                 .bindFromRequest();
 
         if (form.hasErrors()) {
-            return Results.status(409, form.errorsAsJson());
+            return Results.badRequest(form.errorsAsJson());
         }
 
         Recipe recipe = Recipe.findById(id);
@@ -215,7 +204,31 @@ public class RecipeController extends BaseController {
             return Results.created();
         } else {
             return Results.status(409,
-                    new ErrorObject("6", getMessage("duplicate_review")).toJson());
+                    new ErrorObject("4", getMessage("duplicate_review")).toJson());
         }
+    }
+
+    public Result searchRecipes() {
+        String name = request().getQueryString("name");
+        String description = request().getQueryString("description");
+        String difficulty = request().getQueryString("difficulty");
+        String author = request().getQueryString("author");
+        String kitchen = request().getQueryString("kitchen");
+        String rations = request().getQueryString("rations");
+        String time = request().getQueryString("time");
+        String type = request().getQueryString("type");
+        String ingredient = request().getQueryString("ingredient");
+        String tag = request().getQueryString("tag");
+        String page = request().getQueryString("page");
+        String sortBy = request().getQueryString("sortBy");
+
+        PagedList<Recipe> recipes = Recipe.findBy(name, description, difficulty, author,
+                kitchen, (rations != null) ? rations.split(":") : null,
+                (time != null) ? time.split(":") : null, type, ingredient, tag, page, (sortBy != null) ? sortBy.split(":") : null);
+        ObjectNode json = Json.newObject();
+        json.put("page", (page != null) ? Integer.parseInt(page) : 0);
+        json.put("total", recipes.getTotalCount());
+        json.putPOJO("recipes", recipes.getList());
+        return Results.ok(json);
     }
 }

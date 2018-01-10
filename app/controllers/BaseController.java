@@ -6,7 +6,7 @@ import play.mvc.Http;
 
 import javax.inject.Inject;
 
-class BaseController extends Controller {
+abstract class BaseController extends Controller {
 
     @Inject
     FormFactory formFactory;

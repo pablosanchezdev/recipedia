@@ -11,7 +11,7 @@ import javax.persistence.Version;
 import java.sql.Timestamp;
 
 @MappedSuperclass
-public class BaseModel extends Model {
+public abstract class BaseModel extends Model {
 
     @Id
     private Long id;
@@ -27,6 +27,8 @@ public class BaseModel extends Model {
     @UpdatedTimestamp
     @JsonIgnore
     private Timestamp updatedAt;
+
+    static final int PAGE_SIZE = 20;  // Number of models per page
 
     public Long getId() {
         return id;

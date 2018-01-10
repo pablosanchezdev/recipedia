@@ -23,3 +23,6 @@ libraryDependencies += evolutions
 
 // h2 driver
 libraryDependencies += "com.h2database" % "h2" % "1.4.194"
+
+// mysql driver
+libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.36"

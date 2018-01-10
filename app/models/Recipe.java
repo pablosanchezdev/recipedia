@@ -2,15 +2,16 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.ebean.ExpressionList;
 import io.ebean.Finder;
 import io.ebean.PagedList;
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.Range;
+import io.ebean.annotation.EnumValue;
 import play.data.validation.Constraints.MaxLength;
 import play.data.validation.Constraints.Required;
 import play.libs.Json;
 
 import javax.persistence.*;
+import javax.validation.constraints.Min;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,40 +20,59 @@ import java.util.List;
 public class Recipe extends BaseModel {
 
     @Required
-    @NotBlank
     private String name;
 
     @Required
-    @NotBlank
     @MaxLength(255)
     private String description;
 
     @Required
-    @NotBlank
+    @Enumerated(EnumType.STRING)
+    public Difficulty difficulty;
+
+    public enum Difficulty {
+        @EnumValue("Alta")
+        Alta,
+        @EnumValue("Media")
+        Media,
+        @EnumValue("Baja")
+        Baja,
+    }
+
+    @Required
     @Column(columnDefinition = "text")
     private String steps;
 
     @Required
-    @NotBlank
     @MaxLength(255)
     private String author;
 
     @Required
-    @NotBlank
     @MaxLength(255)
     private String kitchen;
 
     @Required
-    @Range(min = 1, max = 256)
+    @Min(1)
     private Integer rations;
 
     @Required
-    @Range(min = 1, max = 512)
-    private Integer elaborationTime;
+    @Min(1)
+    private Integer time;
 
     @Required
-    @Range(min = 1, max = 512)
-    private Integer cookingTime;
+    @Enumerated(EnumType.STRING)
+    public Type type;
+
+    public enum Type {
+        @EnumValue("Entrante")
+        Entrante,
+        @EnumValue("Primero")
+        Primero,
+        @EnumValue("Segundo")
+        Segundo,
+        @EnumValue("Postre")
+        Postre
+    }
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JsonManagedReference
@@ -69,19 +89,82 @@ public class Recipe extends BaseModel {
     private static final Finder<Long, Recipe> find =
             new Finder<>(Recipe.class);
 
-    private static final int PAGE_SIZE = 25;  // Number of recipes per page
+    public Recipe() {
+        super();
+    }
 
     public static Recipe findById(Long id) {
         return find.byId(id);
     }
 
-    public static Recipe findByNameAndAuthor(String name, String author) {
+    private static Recipe findByNameAndAuthor(String name, String author) {
         return find
                 .query()
                 .where()
                     .eq("name", name)
                     .eq("author", author)
                 .findOne();
+    }
+
+    public static PagedList<Recipe> findBy(String name, String description, String difficulty,
+                                           String author, String kitchen, String[] rations,
+                                           String[] time, String type, String ingredient,
+                                           String tag, String page, String[] sortBy) {
+        ExpressionList<Recipe> searchQuery = find
+                .query()
+                .where();
+
+        if (name != null) {
+            searchQuery.icontains("name", name);
+        }
+        if (description != null) {
+            searchQuery.icontains("description", description);
+        }
+        if (difficulty != null) {
+            searchQuery.ieq("difficulty", difficulty);
+        }
+        if (author != null) {
+            searchQuery.icontains("author", author);
+        }
+        if (kitchen != null) {
+            searchQuery.icontains("kitchen", kitchen);
+        }
+        if (rations != null && rations.length == 2) {
+            if (rations[1].equalsIgnoreCase("eq")) {
+                searchQuery.ieq("rations", rations[0]);
+            } else if (rations[1].equalsIgnoreCase("gt")) {
+                searchQuery.gt("rations", rations[0]);
+            } else if (rations[1].equalsIgnoreCase("lt")) {
+                searchQuery.lt("rations", rations[0]);
+            }
+        }
+        if (time != null && time.length == 2) {
+            if (time[1].equalsIgnoreCase("eq")) {
+                searchQuery.ieq("time", time[0]);
+            } else if (time[1].equalsIgnoreCase("gt")) {
+                searchQuery.gt("time", time[0]);
+            } else if (time[1].equalsIgnoreCase("lt")) {
+                searchQuery.lt("time", time[0]);
+            }
+        }
+        if (type != null) {
+            searchQuery.ieq("type", type);
+        }
+        if (ingredient != null) {
+            searchQuery.ieq("ingredients.name", ingredient);
+        }
+        if (tag != null) {
+            searchQuery.ieq("tags.name", tag);
+        }
+        if (sortBy != null && sortBy.length == 2) {
+            searchQuery.query().orderBy(sortBy[0] + " " + sortBy[1]);
+        }
+
+        return searchQuery
+                .query()
+                .setMaxRows(PAGE_SIZE)
+                .setFirstRow(page != null ? Integer.parseInt(page) : 0)
+                .findPagedList();
     }
 
     public static PagedList<Recipe> findAll(Integer page) {
@@ -110,30 +193,29 @@ public class Recipe extends BaseModel {
         if (!this.getTags().isEmpty()) {
             this.getTags().clear();
         }
+        if (!this.getReviews().isEmpty()) {
+            this.getReviews().clear();
+        }
     }
 
-    public int validateIngredientAndSave(String ingrName) {
-        if (ingrName.length() > 255) {
-            return -1;
-        }
-
+    public boolean validateIngredientAndSave(String ingrName) {
         Ingredient ingredient = Ingredient.findByName(ingrName);
         if (ingredient == null) {
             ingredient = new Ingredient();
             ingredient.setName(toCamelCase(ingrName));
             ingredient.save();
-        }
-
-        if (ingredient.getRecipes().contains(this)
-                && this.getIngredients().contains(ingredient)) {
-            return 1;
+        } else {
+            if (ingredient.getRecipes().contains(this)
+                    && this.getIngredients().contains(ingredient)) {
+                return false;
+            }
         }
 
         ingredient.getRecipes().add(this);
         this.getIngredients().add(ingredient);
         this.save();
 
-        return 0;
+        return true;
     }
 
     public void deleteIngredientAndSave(String ingrName) {
@@ -145,28 +227,24 @@ public class Recipe extends BaseModel {
         }
     }
 
-    public int validateTagAndSave(String tagName) {
-        if (tagName.length() > 255) {
-            return -1;
-        }
-
+    public boolean validateTagAndSave(String tagName) {
         Tag tag = Tag.findByName(tagName);
         if (tag == null) {
             tag = new Tag();
             tag.setName(toCamelCase(tagName));
             tag.save();
-        }
-
-        if (tag.getRecipes().contains(this)
-                && this.getTags().contains(tag)) {
-            return 1;
+        } else {
+            if (tag.getRecipes().contains(this)
+                    && this.getTags().contains(tag)) {
+                return false;
+            }
         }
 
         tag.getRecipes().add(this);
         this.getTags().add(tag);
         this.save();
 
-        return 0;
+        return true;
     }
 
     public void removeTagAndSave(String tagName) {
@@ -241,20 +319,12 @@ public class Recipe extends BaseModel {
         this.rations = rations;
     }
 
-    public Integer getElaborationTime() {
-        return elaborationTime;
+    public Integer getTime() {
+        return time;
     }
 
-    public void setElaborationTime(Integer elaborationTime) {
-        this.elaborationTime = elaborationTime;
-    }
-
-    public Integer getCookingTime() {
-        return cookingTime;
-    }
-
-    public void setCookingTime(Integer cookingTime) {
-        this.cookingTime = cookingTime;
+    public void setTime(Integer time) {
+        this.time = time;
     }
 
     public List<Ingredient> getIngredients() {

@@ -14,17 +14,20 @@ create table ingredients (
 
 create table recipes (
   id                            bigint auto_increment not null,
-  name                          varchar(255) not null,
-  description                   varchar(255) not null,
-  steps                         text not null,
-  author                        varchar(255) not null,
-  kitchen                       varchar(255) not null,
+  name                          varchar(255),
+  description                   varchar(255),
+  difficulty                    varchar(5),
+  steps                         text,
+  author                        varchar(255),
+  kitchen                       varchar(255),
   rations                       integer,
-  elaboration_time              integer,
-  cooking_time                  integer,
+  time                          integer,
+  type                          varchar(8),
   version                       bigint not null,
   created_at                    timestamp not null,
   updated_at                    timestamp not null,
+  constraint ck_recipes_difficulty check ( difficulty in ('Alta','Media','Baja')),
+  constraint ck_recipes_type check ( type in ('Entrante','Postre','Primero','Segundo')),
   constraint pk_recipes primary key (id)
 );
 
@@ -42,9 +45,9 @@ create table recipes_tags (
 
 create table reviews (
   id                            bigint auto_increment not null,
-  comment                       varchar(255) not null,
+  comment                       varchar(255),
   rating                        float,
-  author                        varchar(255) not null,
+  author                        varchar(255),
   recipe_id                     bigint,
   version                       bigint not null,
   created_at                    timestamp not null,

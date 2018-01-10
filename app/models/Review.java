@@ -3,9 +3,9 @@ package models;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
-import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.Range;
-import play.data.validation.Constraints.*;
+import play.data.validation.Constraints.MaxLength;
+import play.data.validation.Constraints.Required;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
@@ -16,7 +16,6 @@ import javax.persistence.Table;
 public class Review extends BaseModel {
 
     @Required
-    @NotBlank
     @MaxLength(255)
     private String comment;
 
@@ -25,7 +24,6 @@ public class Review extends BaseModel {
     private Float rating;
 
     @Required
-    @NotBlank
     @MaxLength(255)
     private String author;
 
@@ -36,7 +34,11 @@ public class Review extends BaseModel {
     private static final Finder<Long, Review> find =
             new Finder<>(Review.class);
 
-    public static Review findByAuthorAndRecipeId(String author, Long recipeId) {
+    public Review() {
+        super();
+    }
+
+    private static Review findByAuthorAndRecipeId(String author, Long recipeId) {
         return find
                 .query()
                 .where()
