@@ -1,0 +1,7 @@
+@(u: User)
+
+<user>
+    <id>@u.getId()</id>
+    <name>@u.getName()</name>
+    <city>@u.getCity()</city>
+</user>

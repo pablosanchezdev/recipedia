@@ -3,5 +3,5 @@
 <review>
     <comment>@r.getComment()</comment>
     <rating>@r.getRating()</rating>
-    <author>@r.getAuthor()</author>
+    @_user(r.getUser())
 </review>

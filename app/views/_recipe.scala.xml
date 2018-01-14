@@ -5,7 +5,7 @@
     <name>@r.getName()</name>
     <description>@r.getDescription()</description>
     <steps>@r.getSteps()</steps>
-    <author>@r.getAuthor()</author>
+    @_user(r.getUser())
     <kitchen>@r.getKitchen()</kitchen>
     <rations>@r.getRations()</rations>
     <time>@r.getTime()</time>

@@ -3,4 +3,9 @@ duplicate_ingredient = The supplied ingredient is already on the specified recip
 duplicate_tag = The supplied tag is already on the specified recipe
 duplicate_review = You have already reviewed this recipe
 
+duplicate_user = The specified user already exists
+
+update_unauthorized = You are only allowed to modify your own recipes
+delete_unauthorized = You are only allowed to delete your own recipes
+
 error.invalid = Invalid value. Revise documentation

@@ -1,0 +1,11 @@
+@(page: Integer, total: Integer, users: List[User])
+
+@_header()
+
+<page>@page</page>
+<total>@total</total>
+<users>
+    @for(u <- users) {
+        @_user(u)
+    }
+</users>

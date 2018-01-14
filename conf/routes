@@ -30,11 +30,34 @@ GET         /recipes/$page<[0-9]+>              controllers.RecipeController.ret
 # Advanced operations
 
 POST        /recipe/$id<[0-9]+>/ingredient/:i   controllers.RecipeController.addIngredient(id: Long, i)
-DELETE      /recipe/$id<[0-9]+>/ingredient/:i   controllers.RecipeController.removeIngredient(id: Long, i)
+DELETE      /recipe/$id<[0-9]+>/ingredient/:i   controllers.RecipeController.deleteIngredient(id: Long, i)
 
 POST        /recipe/$id<[0-9]+>/tag/:tagName    controllers.RecipeController.addTag(id: Long, tagName)
-DELETE      /recipe/$id<[0-9]+>/tag/:tagName    controllers.RecipeController.removeTag(id: Long, tagName)
+DELETE      /recipe/$id<[0-9]+>/tag/:tagName    controllers.RecipeController.deleteTag(id: Long, tagName)
 
 POST        /recipe/$id<[0-9]+>/review          controllers.RecipeController.addReview(id: Long)
 
 GET         /recipes/search                     controllers.RecipeController.searchRecipes
+
+
+# ~~~~~~~~~~~~~~~
+# User resource
+# ~~~~~~~~~~~~~~~
+
+# Basic CRUD operations
+
+POST        /user                               controllers.UserController.createUser
+GET         /user/$id<[0-9]+>                   controllers.UserController.retrieveUser(id: Long)
+PUT         /user                               controllers.UserController.updateUser
+PATCH       /user                               controllers.UserController.partialUpdateUser
+DELETE      /user                               controllers.UserController.deleteUser
+
+GET         /users/$page<[0-9]+>                controllers.UserController.retrieveUserCollection(page: Integer)
+
+# Advanced operations
+
+GET     /user/$id<[0-9]+>/recipes/$page<[0-9]+> controllers.UserController.retrieveUserRecipes(id: Long, page: Integer)
+
+GET         /users/search                       controllers.UserController.searchUsers
+
+POST        /user/resetToken                    controllers.UserController.resetToken
