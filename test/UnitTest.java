@@ -1,10 +1,16 @@
 import akka.actor.ActorSystem;
 import controllers.AsyncController;
 import controllers.CountController;
+import models.Token;
 import org.junit.Test;
 import play.mvc.Result;
 import scala.concurrent.ExecutionContextExecutor;
+import validators.DNIValidator;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,6 +56,46 @@ public class UnitTest {
         } finally {
             actorSystem.terminate();
         }
+    }
+
+
+    @Test
+    public void testRandomAPIkey() {
+        Set<String> apiKeysNotRepeated;
+        List<String> apiKeys = new ArrayList<>();
+
+        for (int i = 0; i < 200; i++)
+        {
+            apiKeys.add(Token.generateToken());
+        }
+
+        apiKeysNotRepeated = new HashSet<>(apiKeys);
+
+        assertThat(apiKeysNotRepeated.size()).isEqualTo(200);
+    }
+
+
+    @Test
+    public void testAPIkeyLenght() {
+        String apiKey = Token.generateToken();
+
+        assertThat(apiKey.length()).isEqualTo(20);
+    }
+
+
+    @Test
+    public void testDNIValidatorOk() {
+        DNIValidator validator = new DNIValidator();
+
+        assertThat(validator.isValid("70899287Q", null)).isEqualTo(true);
+    }
+
+
+    @Test
+    public void testDNIValidatorNotOk() {
+        DNIValidator validator = new DNIValidator();
+
+        assertThat(validator.isValid("70899287W", null)).isEqualTo(false);
     }
 
 }
