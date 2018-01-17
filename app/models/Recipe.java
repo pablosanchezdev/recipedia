@@ -103,7 +103,7 @@ public class Recipe extends BaseModel {
                 .query()
                 .where()
                     .eq("name", name)
-                    .eq("user_id", user.getId())
+                    .eq("user.id", user.getId())
                 .findOne();
     }
 
@@ -111,7 +111,7 @@ public class Recipe extends BaseModel {
         return find
                 .query()
                 .where()
-                    .eq("user_id", userId)
+                    .eq("user.id", userId)
                 .setMaxRows(PAGE_SIZE)
                 .setFirstRow(PAGE_SIZE * page)
                 .findPagedList();
@@ -150,7 +150,7 @@ public class Recipe extends BaseModel {
         }
         if (rations != null && rations.length == 2) {
             if (rations[1].equalsIgnoreCase("eq")) {
-                searchQuery.ieq("rations", rations[0]);
+                searchQuery.eq("rations", rations[0]);
             } else if (rations[1].equalsIgnoreCase("gt")) {
                 searchQuery.gt("rations", rations[0]);
             } else if (rations[1].equalsIgnoreCase("lt")) {
@@ -159,7 +159,7 @@ public class Recipe extends BaseModel {
         }
         if (time != null && time.length == 2) {
             if (time[1].equalsIgnoreCase("eq")) {
-                searchQuery.ieq("time", time[0]);
+                searchQuery.eq("time", time[0]);
             } else if (time[1].equalsIgnoreCase("gt")) {
                 searchQuery.gt("time", time[0]);
             } else if (time[1].equalsIgnoreCase("lt")) {
@@ -199,8 +199,7 @@ public class Recipe extends BaseModel {
     }
 
     public boolean validateAndUpdate() {
-        Recipe recipe = Recipe.findByNameAndUser(this.name, this.user);
-        if (recipe != null && !recipe.getId().equals(this.getId())) {
+        if (isRecipeDuplicated()) {
             return false;
         }
 
@@ -211,7 +210,13 @@ public class Recipe extends BaseModel {
     }
 
     private boolean isRecipeDuplicated() {
-        return Recipe.findByNameAndUser(this.name, this.user) != null;
+        Recipe recipe = Recipe.findByNameAndUser(this.name, this.user);
+
+        if (this.getId() != null) {
+            return recipe != null && !recipe.getId().equals(this.getId());
+        }
+
+        return recipe != null;
     }
 
     private void checkRecipeIntegrity() {

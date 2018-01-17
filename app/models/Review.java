@@ -4,13 +4,14 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.ebean.Finder;
-import org.hibernate.validator.constraints.Range;
 import play.data.validation.Constraints.MaxLength;
 import play.data.validation.Constraints.Required;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
 
 @Entity
 @Table(name = "reviews")
@@ -21,7 +22,8 @@ public class Review extends BaseModel {
     private String comment;
 
     @Required
-    @Range(min = 0, max = 5)
+    @DecimalMin("0.0")
+    @DecimalMax("5.0")
     private Float rating;
 
     @ManyToOne
@@ -43,8 +45,8 @@ public class Review extends BaseModel {
         return find
                 .query()
                 .where()
-                    .eq("user_id", user.getId())
-                    .eq("recipe_id", recipe.getId())
+                    .eq("user.id", user.getId())
+                    .eq("recipe.id", recipe.getId())
                 .findOne();
     }
 

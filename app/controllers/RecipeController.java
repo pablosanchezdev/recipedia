@@ -11,6 +11,8 @@ import play.libs.Json;
 import play.mvc.Result;
 import play.mvc.Results;
 import play.mvc.Security;
+import play.twirl.api.Content;
+import scala.Int;
 
 import java.util.List;
 
@@ -37,16 +39,33 @@ public class RecipeController extends BaseController {
     }
 
     public Result retrieveRecipe(Long id) {
-        Recipe recipe = Recipe.findById(id);
+        String key = getSingleRecipeCacheKey(id);
+        Recipe recipe = cache.get(key);
+        if (recipe == null) {
+            recipe = Recipe.findById(id);
+            cache.set(key, recipe);
+        }
 
         if (recipe == null) {
             return Results.notFound();
         }
 
         if (request().accepts("application/json")) {
-            return Results.ok(recipe.toJson());
+            key = getSingleRecipeResponseCacheKey(id, "json");
+            JsonNode json = cache.get(key);
+            if (json == null) {
+                json = recipe.toJson();
+                cache.set(key, json);
+            }
+            return Results.ok(json);
         } else if (request().accepts("application/xml")) {
-            return Results.ok(views.xml.recipe.render(recipe));
+            key = getSingleRecipeResponseCacheKey(id, "xml");
+            Content content = cache.get(key);
+            if (content == null) {
+                content = views.xml.recipe.render(recipe);
+                cache.set(key, content);
+            }
+            return Results.ok(content);
         } else {
             return Results.status(415);
         }
@@ -76,6 +95,7 @@ public class RecipeController extends BaseController {
         newRecipe.setId(id);
         newRecipe.setUser(user);
         if (newRecipe.validateAndUpdate()) {
+            deleteRecipeFromCache(id);
             return Results.ok();
         } else {
             return Results.status(409,
@@ -132,6 +152,7 @@ public class RecipeController extends BaseController {
 
             if (modified) {
                 if (recipe.validateAndUpdate()) {
+                    deleteRecipeFromCache(id);
                     return Results.ok();
                 } else {
                     return Results.status(409,
@@ -153,13 +174,19 @@ public class RecipeController extends BaseController {
             if (!recipe.delete()) {
                 return Results.internalServerError();
             }
+            deleteRecipeFromCache(id);
         }
 
         return Results.ok();
     }
 
     public Result retrieveRecipeCollection(Integer page) {
-        PagedList<Recipe> list = Recipe.findAll(page);
+        String key = getPagedRecipeCollectionCacheKey(page);
+        PagedList<Recipe> list = cache.get(key);
+        if (list == null) {
+            list = Recipe.findAll(page);
+            cache.set(key, list, 2 * 60);
+        }
 
         return displayRecipes(list, page);
     }
@@ -176,6 +203,7 @@ public class RecipeController extends BaseController {
         }
 
         if (recipe.validateIngredientAndSave(ingredient)) {
+            deleteRecipeFromCache(recipeId);
             return Results.created();
         } else {
             return Results.status(409,
@@ -191,6 +219,7 @@ public class RecipeController extends BaseController {
                         new ErrorObject("6", getMessage("update_unauthorized")).toJson());
             }
             recipe.deleteIngredientAndSave(ingredient);
+            deleteRecipeFromCache(recipeId);
         }
 
         return Results.ok();
@@ -208,6 +237,7 @@ public class RecipeController extends BaseController {
         }
 
         if (recipe.validateTagAndSave(tagName)) {
+            deleteRecipeFromCache(recipeId);
             return Results.created();
         } else {
             return Results.status(409,
@@ -223,6 +253,7 @@ public class RecipeController extends BaseController {
                         new ErrorObject("6", getMessage("update_unauthorized")).toJson());
             }
             recipe.deleteTagAndSave(tagName);
+            deleteRecipeFromCache(recipeId);
         }
 
         return Results.ok();
@@ -245,6 +276,7 @@ public class RecipeController extends BaseController {
         Review review = form.get();
         review.setUser(getLoggedUser());
         if (recipe.addReview(review)) {
+            deleteRecipeFromCache(id);
             return Results.created();
         } else {
             return Results.status(409,

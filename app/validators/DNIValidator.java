@@ -14,6 +14,7 @@ public class DNIValidator implements ConstraintValidator<DNI, String> {
                 && checkLetter(value);
     }
 
+    // http://www.interior.gob.es/web/servicios-al-ciudadano/dni/calculo-del-digito-de-control-del-nif-nie
     private boolean checkLetter(String dni) {
         Character[] letters = {'T', 'R', 'W', 'A', 'G', 'M', 'Y', 'F', 'P', 'D', 'X',
                 'B', 'N', 'J', 'Z', 'S', 'Q', 'V', 'H', 'L', 'C', 'K', 'E'};

@@ -10,6 +10,7 @@ import play.libs.Json;
 import play.mvc.Result;
 import play.mvc.Results;
 import play.mvc.Security;
+import play.twirl.api.Content;
 
 import java.util.List;
 
@@ -37,16 +38,33 @@ public class UserController extends BaseController {
 
     @Security.Authenticated(Authorization.class)
     public Result retrieveUser(Long id) {
-        User user = User.findById(id);
+        String key = getSingleUserCacheKey(id);
+        User user = cache.get(key);
+        if (user == null) {
+            user = User.findById(id);
+            cache.set(key, user);
+        }
 
         if (user == null) {
             return Results.notFound();
         }
 
         if (request().accepts("application/json")) {
-            return Results.ok(user.toJson());
+            key = getSingleUserResponseCacheKey(id, "json");
+            JsonNode json = cache.get(key);
+            if (json == null) {
+                json = user.toJson();
+                cache.set(key, json);
+            }
+            return Results.ok(json);
         } else if (request().accepts("application/xml"))  {
-            return Results.ok(views.xml.user.render(user));
+            key = getSingleUserResponseCacheKey(id, "xml");
+            Content content = cache.get(key);
+            if (content == null) {
+                content = views.xml.user.render(user);
+                cache.set(key, content);
+            }
+            return Results.ok(content);
         } else {
             return Results.status(415);
         }
@@ -66,6 +84,7 @@ public class UserController extends BaseController {
         User newUser = form.get();
         newUser.setId(id);
         if (newUser.validateAndUpdate()) {
+            deleteUserFromCache(id);
             return Results.ok();
         } else {
             return Results.status(409,
@@ -90,6 +109,7 @@ public class UserController extends BaseController {
 
             if (modified) {
                 if (user.validateAndUpdate()) {
+                    deleteUserFromCache(user.getId());
                     return Results.ok();
                 } else {
                     return Results.status(409,
@@ -104,6 +124,8 @@ public class UserController extends BaseController {
     @Security.Authenticated(Authorization.class)
     public Result deleteUser() {
         User user = getLoggedUser();
+        deleteUserFromCache(user.getId());
+        deleteUserRecipesFromCache(user);
         if (!user.delete()) {
             return Results.internalServerError();
         }
@@ -113,9 +135,14 @@ public class UserController extends BaseController {
 
     @Security.Authenticated(Authorization.class)
     public Result retrieveUserCollection(Integer page) {
-        PagedList<User> users = User.findAll(page);
+        String key = getPagedUserCollectionCacheKey(page);
+        PagedList<User> list = cache.get(key);
+        if (list == null) {
+            list = User.findAll(page);
+            cache.set(key, list, 2 * 60);
+        }
 
-        return displayUsers(users, page);
+        return displayUsers(list, page);
     }
 
     @Security.Authenticated(Authorization.class)
@@ -138,9 +165,14 @@ public class UserController extends BaseController {
             return Results.notFound();
         }
 
-        PagedList<Recipe> recipes = Recipe.findByUser(id, page);
+        String key = getPagedUserRecipeCollectionCacheKey(id, page);
+        PagedList<Recipe> list = cache.get(key);
+        if (list == null) {
+            list = Recipe.findByUser(id, page);
+            cache.set(key, list, 2 * 60);
+        }
 
-        return RecipeController.displayRecipes(recipes, page);
+        return RecipeController.displayRecipes(list, page);
     }
 
     @Security.Authenticated(Authorization.class)
@@ -166,6 +198,34 @@ public class UserController extends BaseController {
             return ok(views.xml.users.render(page, list.getTotalCount(), users));
         } else {
             return Results.status(415);
+        }
+    }
+
+    private String getSingleUserCacheKey(Long id) {
+        return "user-" + id;
+    }
+
+    private String getSingleUserResponseCacheKey(Long id, String format) {
+        return "user-" + id + "-" + format;
+    }
+
+    private String getPagedUserCollectionCacheKey(Integer page) {
+        return "users-" + page;
+    }
+
+    private String getPagedUserRecipeCollectionCacheKey(Long id, Integer page) {
+        return "user-" + id + "-recipes-" + page;
+    }
+
+    private void deleteUserFromCache(Long id) {
+        cache.remove(getSingleUserCacheKey(id));
+        cache.remove(getSingleUserResponseCacheKey(id, "json"));
+        cache.remove(getSingleUserResponseCacheKey(id, "xml"));
+    }
+
+    private void deleteUserRecipesFromCache(User user) {
+        for (Recipe recipe : user.getRecipes()) {
+            deleteRecipeFromCache(recipe.getId());
         }
     }
 }

@@ -38,6 +38,7 @@ public class Token extends BaseModel {
                 .findOne();
     }
 
+    // https://stackoverflow.com/questions/20536566/creating-a-random-string-with-a-z-and-0-9-in-java
     public static String generateToken() {
         StringBuilder sb = new StringBuilder(TOKEN_LENGTH);
         SecureRandom random = new SecureRandom();

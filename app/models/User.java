@@ -115,8 +115,7 @@ public class User extends BaseModel {
     }
 
     public boolean validateAndUpdate() {
-        User user = User.findByDni(this.dni);
-        if (user != null && !user.getId().equals(this.getId())) {
+        if (isUserDuplicated()) {
             return false;
         }
 
@@ -126,7 +125,13 @@ public class User extends BaseModel {
     }
 
     private boolean isUserDuplicated() {
-        return User.findByDni(this.dni) != null;
+        User user = User.findByDni(this.dni);
+
+        if (this.getId() != null) {
+            return user != null && !user.getId().equals(this.getId());
+        }
+
+        return user != null;
     }
 
     public String resetToken() {
