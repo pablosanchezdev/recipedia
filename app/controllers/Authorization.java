@@ -33,6 +33,8 @@ public class Authorization extends Security.Authenticator {
 
     @Override
     public Result onUnauthorized(Http.Context ctx) {
-        return Results.unauthorized();
+        return Results.unauthorized(
+                new ErrorObject(ErrorObject.USER_UNAUTHORIZED,
+                        BaseController.getMessage("user_unauthorized")).toJson());
     }
 }

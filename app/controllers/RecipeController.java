@@ -12,7 +12,6 @@ import play.mvc.Result;
 import play.mvc.Results;
 import play.mvc.Security;
 import play.twirl.api.Content;
-import scala.Int;
 
 import java.util.List;
 
@@ -34,7 +33,8 @@ public class RecipeController extends BaseController {
             return Results.created();
         } else {
             return Results.status(409,
-                    new ErrorObject("1", getMessage("duplicate_recipe")).toJson());
+                    new ErrorObject(ErrorObject.DUPLICATE_RECIPE,
+                            getMessage("duplicate_recipe")).toJson());
         }
     }
 
@@ -88,7 +88,8 @@ public class RecipeController extends BaseController {
         User user = getLoggedUser();
         if (isUserUnauthorized(oldRecipe, user)) {
             return Results.unauthorized(
-                    new ErrorObject("6", getMessage("update_unauthorized")).toJson());
+                    new ErrorObject(ErrorObject.UPDATE_UNAUTHORIZED,
+                            getMessage("update_unauthorized")).toJson());
         }
 
         Recipe newRecipe = form.get();
@@ -99,7 +100,8 @@ public class RecipeController extends BaseController {
             return Results.ok();
         } else {
             return Results.status(409,
-                    new ErrorObject("1", getMessage("duplicate_recipe")).toJson());
+                    new ErrorObject(ErrorObject.DUPLICATE_RECIPE,
+                            getMessage("duplicate_recipe")).toJson());
         }
     }
 
@@ -111,7 +113,8 @@ public class RecipeController extends BaseController {
 
         if (isUserUnauthorized(recipe, getLoggedUser())) {
             return Results.unauthorized(
-                    new ErrorObject("6", getMessage("update_unauthorized")).toJson());
+                    new ErrorObject(ErrorObject.UPDATE_UNAUTHORIZED,
+                            getMessage("update_unauthorized")).toJson());
         }
 
         if (request().body() != null && request().body().asJson() != null) {
@@ -156,7 +159,8 @@ public class RecipeController extends BaseController {
                     return Results.ok();
                 } else {
                     return Results.status(409,
-                            new ErrorObject("1", getMessage("duplicate_recipe")).toJson());
+                            new ErrorObject(ErrorObject.DUPLICATE_RECIPE,
+                                    getMessage("duplicate_recipe")).toJson());
                 }
             }
         }
@@ -169,7 +173,8 @@ public class RecipeController extends BaseController {
         if (recipe != null) {
             if (isUserUnauthorized(recipe, getLoggedUser())) {
                 return Results.unauthorized(
-                        new ErrorObject("7", getMessage("delete_unauthorized")).toJson());
+                        new ErrorObject(ErrorObject.DELETE_UNAUTHORIZED,
+                                getMessage("delete_unauthorized")).toJson());
             }
             if (!recipe.delete()) {
                 return Results.internalServerError();
@@ -199,7 +204,8 @@ public class RecipeController extends BaseController {
 
         if (isUserUnauthorized(recipe, getLoggedUser())) {
             return Results.unauthorized(
-                    new ErrorObject("6", getMessage("update_unauthorized")).toJson());
+                    new ErrorObject(ErrorObject.UPDATE_UNAUTHORIZED,
+                            getMessage("update_unauthorized")).toJson());
         }
 
         if (recipe.validateIngredientAndSave(ingredient)) {
@@ -207,7 +213,8 @@ public class RecipeController extends BaseController {
             return Results.created();
         } else {
             return Results.status(409,
-                    new ErrorObject("2", getMessage("duplicate_ingredient")).toJson());
+                    new ErrorObject(ErrorObject.DUPLICATE_INGREDIENT,
+                            getMessage("duplicate_ingredient")).toJson());
         }
     }
 
@@ -216,7 +223,8 @@ public class RecipeController extends BaseController {
         if (recipe != null) {
             if (isUserUnauthorized(recipe, getLoggedUser())) {
                 return Results.unauthorized(
-                        new ErrorObject("6", getMessage("update_unauthorized")).toJson());
+                        new ErrorObject(ErrorObject.UPDATE_UNAUTHORIZED,
+                                getMessage("update_unauthorized")).toJson());
             }
             recipe.deleteIngredientAndSave(ingredient);
             deleteRecipeFromCache(recipeId);
@@ -233,7 +241,8 @@ public class RecipeController extends BaseController {
 
         if (isUserUnauthorized(recipe, getLoggedUser())) {
             return Results.unauthorized(
-                    new ErrorObject("6", getMessage("update_unauthorized")).toJson());
+                    new ErrorObject(ErrorObject.UPDATE_UNAUTHORIZED,
+                            getMessage("update_unauthorized")).toJson());
         }
 
         if (recipe.validateTagAndSave(tagName)) {
@@ -241,7 +250,8 @@ public class RecipeController extends BaseController {
             return Results.created();
         } else {
             return Results.status(409,
-                    new ErrorObject("3", getMessage("duplicate_tag")).toJson());
+                    new ErrorObject(ErrorObject.DUPLICATE_TAG,
+                            getMessage("duplicate_tag")).toJson());
         }
     }
 
@@ -250,7 +260,8 @@ public class RecipeController extends BaseController {
         if (recipe != null) {
             if (isUserUnauthorized(recipe, getLoggedUser())) {
                 return Results.unauthorized(
-                        new ErrorObject("6", getMessage("update_unauthorized")).toJson());
+                        new ErrorObject(ErrorObject.UPDATE_UNAUTHORIZED,
+                                getMessage("update_unauthorized")).toJson());
             }
             recipe.deleteTagAndSave(tagName);
             deleteRecipeFromCache(recipeId);
@@ -280,7 +291,8 @@ public class RecipeController extends BaseController {
             return Results.created();
         } else {
             return Results.status(409,
-                    new ErrorObject("4", getMessage("duplicate_review")).toJson());
+                    new ErrorObject(ErrorObject.DUPLICATE_REVIEW,
+                            getMessage("duplicate_review")).toJson());
         }
     }
 
@@ -322,6 +334,7 @@ public class RecipeController extends BaseController {
         }
     }
 
+    // A user can just modify its own recipes
     private boolean isUserUnauthorized(Recipe recipe, User user) {
         return !recipe.getUser().getId().equals(user.getId());
     }

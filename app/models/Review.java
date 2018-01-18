@@ -22,8 +22,8 @@ public class Review extends BaseModel {
     private String comment;
 
     @Required
-    @DecimalMin("0.0")
-    @DecimalMax("5.0")
+    @DecimalMin(value = "0.0", message = "error.greater")
+    @DecimalMax(value = "5.0", message = "error.lower")
     private Float rating;
 
     @ManyToOne
@@ -60,6 +60,7 @@ public class Review extends BaseModel {
         return true;
     }
 
+    // A user can only comment once for each recipe
     private boolean isReviewDuplicated() {
         return Review.findByUserAndRecipe(this.user, this.recipe) != null;
     }

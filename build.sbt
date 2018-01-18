@@ -21,8 +21,5 @@ testOptions in Test := Seq(Tests.Argument(TestFrameworks.JUnit, "-a", "-v"))
 enablePlugins(PlayEbean)
 libraryDependencies += evolutions
 
-// mysql driver
-libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.36"
-
-// cache
+// Cache
 libraryDependencies ++= Seq(ehcache)

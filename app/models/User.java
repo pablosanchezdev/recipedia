@@ -124,6 +124,7 @@ public class User extends BaseModel {
         return true;
     }
 
+    // There can be no more than one user with same dni
     private boolean isUserDuplicated() {
         User user = User.findByDni(this.dni);
 

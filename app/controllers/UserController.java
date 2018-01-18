@@ -32,7 +32,8 @@ public class UserController extends BaseController {
                     .withHeader("Authorization", user.getToken().getToken());
         } else {
             return Results.status(409,
-                    new ErrorObject("5", getMessage("duplicate_user")).toJson());
+                    new ErrorObject(ErrorObject.DUPLICATE_USER,
+                            getMessage("duplicate_user")).toJson());
         }
     }
 
@@ -88,7 +89,8 @@ public class UserController extends BaseController {
             return Results.ok();
         } else {
             return Results.status(409,
-                    new ErrorObject("5", getMessage("duplicate_user")).toJson());
+                    new ErrorObject(ErrorObject.DUPLICATE_USER,
+                            getMessage("duplicate_user")).toJson());
         }
     }
 
@@ -113,7 +115,8 @@ public class UserController extends BaseController {
                     return Results.ok();
                 } else {
                     return Results.status(409,
-                            new ErrorObject("5", getMessage("duplicate_user")).toJson());
+                            new ErrorObject(ErrorObject.DUPLICATE_USER,
+                                    getMessage("duplicate_user")).toJson());
                 }
             }
         }

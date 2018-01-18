@@ -133,6 +133,7 @@ public class Recipe extends BaseModel {
                 .query()
                 .where();
 
+        // Chain filters on the same request
         if (name != null) {
             searchQuery.icontains("name", name);
         }
@@ -209,6 +210,7 @@ public class Recipe extends BaseModel {
         return true;
     }
 
+    // A user can not have two recipes with same name
     private boolean isRecipeDuplicated() {
         Recipe recipe = Recipe.findByNameAndUser(this.name, this.user);
 

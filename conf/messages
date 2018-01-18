@@ -1,3 +1,5 @@
+user_unauthorized = Invalid token or unpresent authorization header
+
 duplicate_recipe = The specified recipe already exists
 duplicate_ingredient = The supplied ingredient is already on the specified recipe
 duplicate_tag = The supplied tag is already on the specified recipe
@@ -9,3 +11,5 @@ update_unauthorized = You are only allowed to modify your own recipes
 delete_unauthorized = You are only allowed to delete your own recipes
 
 error.invalid = Invalid value. Revise documentation
+error.greater = Must be greater than 0
+error.lower = Must be lower than 5

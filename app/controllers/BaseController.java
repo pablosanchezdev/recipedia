@@ -16,7 +16,7 @@ abstract class BaseController extends Controller {
     @Inject
     SyncCacheApi cache;
 
-    String getMessage(String key) {
+    static String getMessage(String key) {
         return Http.Context.current().messages().at(key);
     }
 
