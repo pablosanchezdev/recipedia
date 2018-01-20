@@ -11,160 +11,514 @@
     <div id="content" class="wrapper doc">
         <article>
 
-            <h1>Welcome to Play</h1>
+            <h1>Bienvenido a @message</h1>
 
             <p>
-                Congratulations, you’ve just created a new Play application. This page will help you with the next few steps.
+                Recipedia es un API de recetas de comida. En ella puedes encontrar distintas recetas de todo tipo,
+                desde entrantes hasta postres. Además, podras consultar recetas de otros autores y también podrás
+                colaborar con nosotros haciéndote usuario y subiendo tus recetas favoritas.
             </p>
 
             <blockquote>
                 <p>
-                    You’re using Play @version
+                    Estás usando Recipedia 1.0
                 </p>
             </blockquote>
 
-            <h2>Why do you see this page?</h2>
+            <h2>Primeros pasos</h2>
 
             <p>
-                The <code>conf/routes</code> file defines a route that tells Play to invoke the <code>HomeController.index</code> action
-                whenever a browser requests the <code>/</code> URI using the GET method:
-            </p>
-
-            <pre><code># Home page
-GET     /               controllers.HomeController.index</code></pre>
-
-
-            <p>
-                Play has invoked the <code>controllers.HomeController.index</code> method:
-            </p>
-
-            <pre><code>public Result index() {
-    return ok(index.render("Your new application is ready."));
-}</code></pre>
-
-            <p>
-                An action method handles the incoming HTTP request, and returns the HTTP result to send back to the web client.
-                Here we send a <code>200 OK</code> response, using a template to fill its content.
+                Primeramente debes obtener un <code>api key</code> para poder utilizar este API<strong> gratuito</strong>. Para ello debes registrarte como usuario haciendo una petición <code>POST</code> a la ruta <code>/user</code>. En la petición debes incluir en el body los campos requeridos del <a href="#users_table">usuario</a> y recibirás una respuesta <code>201 Created</code> junto con tu api key en el header <code>Authorization</code>.
             </p>
 
             <p>
-                The template is defined in the <code>app/views/index.scala.html</code> file and compiled as a standard Java class.
+                Una vez realizado el paso anterior, deberás guardar el <code>API-Key</code> recibido y no perderlo. Ahora ya podrás realizar consultas sobre la base de datos de nuestro API, así como ayudarnos a completarla con tus recetas. Ya eres un miembro de Recipedia. ¡Enhorabuena!
             </p>
 
-            <pre><code>@@(message: String)
+            <p>
+                Puedes solicitar un nuevo <code>api key</code> haciendo una petición <code>POST</code> a /user/resetToken (descrito más abajo).</p>
+            <p>
+                <a href="#continue">Seguir leyendo</a>
+            </p>
 
-  @@main("Welcome to Play") {
-
-  @@play20.welcome(message, style = "Java")
-
-}</code></pre>
+            <h2 id="continue">Guía de utilización</h2>
 
             <p>
-                The first line of the template defines the function signature. Here it just takes a single <code>String</code> parameter.
-                Then this template calls another function defined in <code>app/views/main.scala.html</code> which displays the HTML layout, and another
-                function that displays this welcome message. You can freely add any HTML fragment mixed with Scala code in this file.
+                En este apartado se pretende instruir al usuario sobre como utilizar correctamente nuestro API y mostrarle los recursos a los que puede acceder.
+            </p>
+
+            <p>
+                Todas las peticiones en las que sea necesario indicar la página a recuperar devuelven, obviamente, resultados paginados. El tamaño de la página es de 20 items por cada una.
+            </p>
+
+            <p>
+                Nuestro api puede devolver las respuestas en formato <code>json</code> o <code>xml</code>. Para indicar cuál deseas, debes incluir la cabecera <code>Accept</code> con el mime type que desees.
+            </p>
+
+            <h3 id="users">Usuarios</h3>
+
+            <p>
+                En nuestra API los usuarios son considerados <strong>autores</strong>, ya que estos pueden subir sus propias recetas. A continuación se mostrará una breve guía sobre los datos que se presentan de cada usuario y como poder realizar peticiones sobre este recurso.
+            </p>
+
+            <p>
+                Las siguientes peticiones deben incluir todas ellas, excepto crear usuario, el <code>api key</code> del usuario en el header <code>Authorization</code>. Comenzaremos con las simples:
+            </p>
+            
+            <pre><code>
+    # Crear usuario o darse de alta
+
+    POST        /user
+
+    # Obtener usuario por id
+
+    GET         /user/:id
+
+    # Modificicar usuario (a uno mismo)
+
+    PUT         /user       (json en el body)
+
+    # Modificar usuario parcialmente (a uno mismo)
+
+    PATCH       /user       (json en el body)
+
+    # Eliminar usuario (a uno mismo)
+
+    DELETE      /user
+
+    # Obtener todos los usuarios (paginados)
+
+    GET         /users/:page
+            </code></pre>
+
+            <p>
+                Operaciones avanzadas que se pueden realizar sobre usuarios:
+            </p>
+
+            <pre><code>
+    # Obtener todas las recetas de un usuario (paginadas)
+
+    GET         /user/:id/recipes/:page
+
+    # Filtrar usuarios por campo (nombre, ciudad)
+
+    GET         /users/search?city=salamanca&name=Javier&page=2&sortBy=city:asc|desc
+
+    # Resetear api key del usuario (a uno mismo)
+
+    POST        /user/resetToken
+            </code></pre>
+
+            <h4 id="users_table">Atributos de usuarios</h4>
+
+            <table class="custom_table">
+                <tr>
+                    <th>Atributo</th>
+                    <th>Descripción</th>
+                    <th>Filter</th>
+                    <th>Sort</th>
+                </tr>
+                <tr>
+                    <td>ID</td>
+                    <td>ID del usuario, este atributo puede ser utilizado para obtener un usuario en concreto</td>
+                    <td>Sí</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td><strong>(Requerido)</strong> Nombre completo del usuario, este atributo puede ser utilizado para filtrar y ordenar usuarios</td>
+                    <td>Sí</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>City</td>
+                    <td><strong>(Requerido)</strong> Ciudad en la que se encuentra el usuario, este atributo puede ser utilizado para filtrar y ordenar usuarios</td>
+                    <td>Sí</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>DNI</td>
+                    <td><strong>(Requerido y oculto)</strong> DNI con el que realizo el registro el usuario. En las peticiones no se muestra por motivos de seguridad</td>
+                    <td>No</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>Recipes</td>
+                    <td><strong>(Oculto)</strong> Lista de recetas de usuario que este ha subido al API</td>
+                    <td>No</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>Reviews</td>
+                    <td><strong>(Oculto)</strong> Lista de comentarios y puntaciones que ha realizado el usuario sobre diferentes recetas del API</td>
+                    <td>No</td>
+                    <td>No</td>
+                </tr>
+            </table>
+
+            <br>
+
+            <h3 id="recipes">Recetas</h3>
+
+            <p>
+                Las recetas constituyen la información mas relevante de nuestro API. Es por eso que se pueden realizar númerosos filtros sobre ellas. A continuación se muestra una guía de como realizar peticiones sobre este recurso.
+            </p>
+
+            <p>
+                Las siguientes peticiones deben incluir todas ellas el <code>api key</code> del usuario en el header <code>Authorization</code>. Comenzaremos por las operaciones simples:
+            </p>
+
+            <p>
+                Para crear una nueva receta se deberá hacer un <code>POST</code> en el que se incluya la receta en el body de este, la receta debe incluir todos los campos requeridos que se expecifican en la <a href="#recipes_table">tabla</a>. El autor será el propio usuario que realiza la petición.
+            </p>
+
+            <pre><code>
+    # Crear receta
+
+    POST        /recipe         (json en el body)
+            </code></pre>
+
+            <p>
+                Mas operaciones simples:
+            </p>
+
+            <pre><code>
+    # Obtener receta por id
+
+    GET         /recipe/:id
+
+    # Modificar receta (propia)
+
+    PUT         /recipe/:id         (json en el body)
+
+    # Modificar receta parcialmente (propia)
+
+    PATCH       /recipe/:id         (json en el body)
+
+    # Eliminar receta (propia)
+
+    DELETE      /recipe/:id
+
+    # Obtener todas las recetas (paginadas)
+
+    GET         /recipes/:page
+            </code></pre>
+
+            <p>
+                Podemos acceder a la operación avanzada de recetas meditante una petición <code>GET</code> a la ruta <code>/recipes/search</code>. Esta llamada tiene un gran potencial de filtrado y ordenado de recetas. Los posibles campos de la <code>query string</code> son: <code>name</code>, <code>description</code>, <code>difficulty</code>, <code>userId</code>, <code>kitchen</code>, <code>rations</code>, <code>time</code>, <code>type</code>, <code>ingredient</code>, <code>tag</code>, <code>sortBy</code> y <code>page</code>.
+            </p>
+
+            <p>
+                Para filtrar con esta operación, debemos incluir uno o varios de los campos mencionados anteriormente en la URL de la siguiente manera:
+            </p>
+
+            <pre><code>
+    # Ejemplo general de busqueda por campo
+
+    GET         /recipes/search?campo1=valor1&campo2=valor2&sortBy=campo1:asc|desc&page=0
+            </code></pre>
+
+            <p>
+                Los campos <code>rations</code> y <code>time</code> funcionan de forma diferente al resto ya que se pueden filtrar mediante la sintaxis "mayor que", "menor que" o "igual". Para ello incluiremos detrás del valor una de las siguientes etiquetas <code>:eq</code>, <code>:gt</code> o <code>:lt</code> (hacen referencia a "equal", "greather than" y "lower than").
             </p>
 
             <blockquote>
                 <p>
-                    <strong>Note</strong> that Scala is fully compatible with Java, so if you don’t know Scala don’t panic, a Scala statement is very similar to a Java one.
+                    <strong>Nota</strong>: no olvides que "time" viene dado en minutos.
                 </p>
             </blockquote>
 
-            <p>You can read more about <a href="https://www.playframework.com/documentation/@version/ScalaTemplates">Twirl</a>, the template language used by Play, and how Play handles <a href="https://www.playframework.com/documentation/@version/JavaActions">actions</a>.</p>
+            <pre><code>
+    # La siguiente consulta devolvería las recetas cuyo tiempo es mayor de 20. Al no indicar página, se devuelve la primera
 
-            <h2>Async Controller</h2>
+    GET         /recipes/search?time=20:gt
+            </code></pre>
 
-            Now that you've seen how Play renders a page, take a look at <code>AsyncController.java</code>, which shows how to do asynchronous programming when handling a request.  The code is almost exactly the same as <code>HomeController.java</code>, but instead of returning <code>Result</code>, the action returns <code>CompletionStage&lt;Result&gt;</code> to Play.  When the execution completes, Play can use a thread to render the result without blocking the thread in the mean time.
+            <h4 id="recipes_table">Atributos de recetas</h4>
+
+            <table class="custom_table">
+                <tr>
+                    <th>Atributo</th>
+                    <th>Descripción</th>
+                    <th>Filter</th>
+                    <th>Sort</th>
+                </tr>
+                <tr>
+                    <td>ID</td>
+                    <td>ID de la receta, este atributo puede ser utilizado para obtener una receta en concreto, también se puede modificar o eliminar si esta pertenece al usuario que ejecute la petición</td>
+                    <td>Sí</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td><strong>(Requerido)</strong> Nombre de la receta que se muestra</td>
+                    <td>Sí</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>Description</td>
+                    <td><strong>(Requerido)</strong> Contiene una breve descripción de la receta</td>
+                    <td>Sí</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>Difficulty</td>
+                    <td><strong>(Requerido)</strong> Dificultad de la receta en cuestión. Se trata de una enumeración cuyos valores pueden ser: <code>Alta</code>, <code>Media</code> o <code>Baja</code></td>
+                    <td>Sí</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>Steps</td>
+                    <td><strong>(Requerido)</strong> Pasos a seguir para la elaboración de la receta que se muestra</td>
+                    <td>No</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>User</td>
+                    <td>Usuario o autor de la receta que se muestra, es decir, este usuario ha hecho previamente un <code>POST</code> a este recurso</td>
+                    <td>Sí</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>Kitchen</td>
+                    <td><strong>(Requerido)</strong> País al que pertenece esta receta (Española, Francesa, Mexicana, etc)</td>
+                    <td>Sí</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>Rations</td>
+                    <td><strong>(Requerido)</strong> Número de personas que pueden comer de esta receta una vez preparada</td>
+                    <td>Sí</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>Time</td>
+                    <td><strong>(Requerido)</strong> Estimación de tiempo que se tarda en preparar esta receta (viene dado en minutos)</td>
+                    <td>Sí</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>Type</td>
+                    <td><strong>(Requerido)</strong> Tipo de comida a la que se refiere la receta. Se trata de una enumeración cuyos valores pueden ser:  <code>Entrante</code>, <code>Primero</code>, <code>Segundo</code> o <code>Postre</code></td>
+                    <td>Sí</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>Ingredients</td>
+                    <td>Lista de ingredientes de la receta</td>
+                    <td>Sí</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>Tags</td>
+                    <td>Lista de tags de la receta</td>
+                    <td>Sí</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>Reviews</td>
+                    <td>Lista de opiniones de la receta</td>
+                    <td>No</td>
+                    <td>No</td>
+                </tr>
+            </table>
+
+            <br>
+
+            <h3 id="comments">Comentarios</h3>
 
             <p>
-                <a href="@routes.AsyncController.message">Click here for the AsyncController action!</a>
+                En este API, todo usuario que lo desee puede realizar un comentario sobre una receta (propia o ajena). Estos comentarios únicamente serán accesibles desde la propia receta, es decir, no hay ningun método para poder listarlos.
             </p>
 
             <p>
-                You can read more about <a href="https://www.playframework.com/documentation/@version/JavaAsync">asynchronous actions</a> in the documentation.
+                La siguiente petición debe incluir el <code>api key</code> en el header <code>Authorization</code> para poder realizarla.
             </p>
 
-            <h2>Count Controller</h2>
+            <pre><code>
+    # Realizar una puntuación sobre una receta
+
+    POST        /recipe/:id/review
+            </code></pre>
+
+            <h4 id="comments_table">Atributos de comentarios</h4>
+
+            <table class="custom_table">
+                <tr>
+                    <th>Atributo</th>
+                    <th>Descripción</th>
+                </tr>
+                <tr>
+                    <td>ID</td>
+                    <td>ID del comentario</td>
+                </tr>
+                <tr>
+                    <td>Comment</td>
+                    <td><strong>(Requerido)</strong> Breve comentario que ha realizado un usuario sobre una receta.</td>
+                </tr>
+                <tr>
+                    <td>Rating</td>
+                    <td><strong>(Requerido)</strong> Puntuación proporcionada por el usuario. Este es un valor acotado que puede ir desde <code>0.0</code> a <code>5.0</code></td>
+                </tr>
+                <tr>
+                    <td>User</td>
+                    <td>Usuario que ha realizado el comentario</td>
+                </tr>
+                <tr>
+                    <td>Recipe</td>
+                    <td><strong>(Oculto)</strong> Receta sobre la que se ha realizado el comentario</td>
+                </tr>
+            </table>
+
+            <br>
+
+            <h3 id="ingredients">Ingredientes</h3>
 
             <p>
-                Both the HomeController and AsyncController are very simple, and typically controllers present the results of the interaction of several services.  As an example, see the <code>CountController</code>, which shows how to inject a component into a controller and use the component when handling requests.  The count controller increments every time you click on it, so keep clicking to see the numbers go up.
-            </p>
-
-            <p>
-                <a href="@routes.CountController.count">Click here for the CountController action!</a>
-            </p>
-
-            <p>
-                You can read more about <a href="https://www.playframework.com/documentation/@version/JavaDependencyInjection">dependency injection</a> in the documentation.
-            </p>
-
-            <h2>Need more info on the console?</h2>
-
-            <p>
-                For more information on the various commands you can run on Play, i.e. running tests and packaging applications for production, see <a href="https://playframework.com/documentation/@version/PlayConsole">Using the Play console</a>.
-            </p>
-
-            <h2>Need to set up an IDE?</h2>
-
-            <p>
-                You can start hacking your application right now using any text editor. Any changes will be automatically reloaded at each page refresh,
-                including modifications made to Scala source files.
-            </p>
-
-            <p>
-                If you want to set-up your application in <strong>IntelliJ IDEA</strong> or any other Java IDE, check the
-                <a href="https://www.playframework.com/documentation/@version/IDE">Setting up your preferred IDE</a> page.
-            </p>
-
-            <h2>Need more documentation?</h2>
-
-            <p>
-                Play documentation is available at <a href="https://www.playframework.com/documentation/@version">https://www.playframework.com/documentation</a>.
-            </p>
-
-            <p>
-                Play comes with lots of example templates showcasing various bits of Play functionality at <a href="https://www.playframework.com/download#examples">https://www.playframework.com/download#examples</a>.
-            </p>
-
-            <h2>Need more help?</h2>
-
-            <p>
-                Play questions are asked and answered on Stackoverflow using the "playframework" tag: <a href="https://stackoverflow.com/questions/tagged/playframework">https://stackoverflow.com/questions/tagged/playframework</a>
+                Es recomendable que despues de incluir una receta en nuestro API, se incluyan también los ingredientes necesarios para llevarla a cabo. Para ello se han incluido 2 acciones que permiten al usuario añadir los ingredientes necesarios a su receta.
             </p>
 
             <p>
-                The <a href="http://groups.google.com/group/play-framework">Play Google Group</a> is where Play users come to seek help,
-                announce projects, and discuss issues and new features. If you don’t have a Google account, you can still join the mailing
-                list by sending an e-mail to
-                <strong>play-framework+subscribe@@googlegroups.com</strong>.
+                Las siguientes peticiones deben incluir el <code>api key</code> en el header <code>Authorization</code> para poder realizarlas.
+            </p>
+
+            <pre><code>
+    # Añadir ingrediente a una receta (propia)
+
+    POST        /recipe/:id/ingredient/:name
+
+    # Eliminar ingrediente de la receta (propia)
+
+    DELETE      /recipe/:id/ingredient/:name
+            </code></pre>
+
+            <h4 id="ingredients_table">Atributos de ingredientes</h4>
+
+            <table class="custom_table">
+                <tr>
+                    <th>Atributo</th>
+                    <th>Descripción</th>
+                </tr>
+                <tr>
+                    <td>ID</td>
+                    <td>ID del ingrediente</td>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td>Nombre del ingrediente</td>
+                </tr>
+                <tr>
+                    <td>Recipes</td>
+                    <td><strong>(Oculto)</strong> Contiene una lista de recetas que pueden ser cocinadas con este ingrediente</td>
+                </tr>
+            </table>
+
+            <br>
+
+            <h3 id="tags">Tags</h3>
+
+            <p>
+                Los tags son esenciales para proporcionar un buen filtrado de recetas, por ello en nuestro API, los usuarios podrán añadirlos a sus recetas. Esto es útil para realizar consultas en las que se quiera buscar, por ejemplo: recetas para celiacos o recetas de pescados.
             </p>
 
             <p>
-                Gitter is a real time chat channel, like IRC. The <a href="https://gitter.im/playframework/playframework">playframework/playframework</a>  channel is used by Play users to discuss the ins and outs of writing great Play applications.
+                Las siguientes peticiones deben incluir el <code>api key</code> en el header <code>Authorization</code> para poder realizarlas.
             </p>
+
+            <pre><code>
+    # Añadir tag a una receta (propia)
+
+    POST        /recipe/:id/tag/:tagName
+
+    # Eliminar tag de la receta (propia)
+
+    DELETE      /recipe/:id/tag/:tagName
+            </code></pre>
+
+            <h4 id="tags_table">Atributos de tags</h4>
+
+            <table class="custom_table">
+                <tr>
+                    <th>Atributo</th>
+                    <th>Descripción</th>
+                </tr>
+                <tr>
+                    <td>ID</td>
+                    <td>ID del tag</td>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td>Nombre del tag</td>
+                </tr>
+                <tr>
+                    <td>Recipes</td>
+                    <td><strong>(Oculto)</strong> Contiene una lista de recetas que pertenecen a este tag</td>
+                </tr>
+            </table>
+
+            <h3 id="errors">Errores</h3>
+
+            <p>
+                A continuación se muestra una tabla con los diferentes códigos y errores que podemos obtener al realizar peticiones en nuestra API.
+            </p>
+
+            <p>
+                Nuestro API soporta los idiomas inglés y español. Los mensajes de error vienen dados en el idioma correspondiente. Para indicar tu preferencia, incluye la cabecera <code>Accept-Language</code> con los valores <code>en</code> para inglés y <code>es</code> para español.
+            </p>
+
+            <h4 id="tags_table">Tipos de errores y códigos asociados</h4>
+
+            <table class="custom_table">
+                <tr>
+                    <th>Código y mensaje HTTP</th>
+                    <th>Descripción</th>
+                </tr>
+                <tr>
+                    <td>200 OK</td>
+                    <td>Se obtiene cuando la petición realizada se ha ejecutado correctamente</td>
+                </tr>
+                <tr>
+                    <td>201 Created</td>
+                    <td>Se obtiene cuando la petición realizada es un <code>POST</code> y se ha ejecutado satisfactoriamente</td>
+                </tr>
+                <tr>
+                    <td>400 Bad Request</td>
+                    <td>Se obtiene cuando el json enviado contiene errores o faltan atributos requeridos. Se devuelve un json en el body indicando los errores, en el lenguaje especificado en la cabecera correspondiente</td>
+                </tr>
+                <tr>
+                    <td>401 Unauthorized</td>
+                    <td>Se obtiene cuando un usuario realiza una petición sin indicar su <code>api key</code> o intenta modificar datos o recetas de otro usuario</td>
+                </tr>
+                <tr>
+                    <td>409 Conflict</td>
+                    <td>Se obtiene cuando hay un conflicto con el recurso solicitado. Se devuelve un json en el body indicando la razón, en el lenguaje especificado en la cabecera correspondiente</td>
+                </tr>
+                <tr>
+                    <td>415 Unsupported Media Type</td>
+                    <td>Se obtiene cuando se especifica un formato distinto a <code>json</code> o <code>xml</code> para obtener las respuestas</td>
+                </tr>
+                <tr>
+                    <td>500 Internal server error</td>
+                    <td>Error interno en el servidor</td>
+                </tr>
+            </table>
 
         </article>
 
         <aside>
-            <h3>Browse</h3>
+            <h3>Recursos</h3>
             <ul>
-                <li><a href="https://playframework.com/documentation/@version">Documentation</a></li>
-                <li><a href="https://playframework.com/documentation/@version/api/@style/index.html">Browse the @{style.capitalize} API</a></li>
-            </ul>
-            <h3>Start here</h3>
-            <ul>
-                <li><a href="https://playframework.com/documentation/@version/PlayConsole">Using the Play console</a></li>
-                <li><a href="https://playframework.com/documentation/@version/IDE">Setting up your preferred IDE</a></li>
-                <li><a href="https://playframework.com/download#examples">Example Projects</a>
-            </ul>
-            <h3>Help here</h3>
-            <ul>
-                <li><a href="https://stackoverflow.com/questions/tagged/playframework">Stack Overflow</a></li>
-                <li><a href="http://groups.google.com/group/play-framework">Mailing List</a></li>
-                <li><a href="https://gitter.im/playframework/playframework">Gitter Channel</a></li>
+                <li><a href="#users">Usuarios</a></li>
+                <li><a href="#recipes">Recetas</a></li>
+                <li><a href="#comments">Comentarios</a></li>
+                <li><a href="#ingredients">Ingredientes</a></li>
+                <li><a href="#tags">Tags</a></li>
             </ul>
 
+            <h3>Errores</h3>
+            <ul>
+                <li><a href="#errors">Errores</a></li>
+            </ul>
         </aside>
 
     </div>
