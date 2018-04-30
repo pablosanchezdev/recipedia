@@ -1,53 +1,44 @@
-[<img src="https://img.shields.io/travis/playframework/play-java-starter-example.svg"/>](https://travis-ci.org/playframework/play-java-starter-example)
+# Recipedia
 
-# play-java-starter-example
+A web api that lets you manage (create, query, modify and delete) food recipes.
 
-This is a starter application that shows how Play works.  Please see the documentation at https://www.playframework.com/documentation/latest/Home for more details.
+You can create your own recipes as well as query other's recipes.
 
-## Running
+> Deployed on [Heroku](https://recipediapablo.herokuapp.com/)
 
-Run this using [sbt](http://www.scala-sbt.org/).  If you downloaded this project from http://www.playframework.com/download then you'll find a prepackaged version of sbt in the project directory:
+## Running the application
 
-```
-sbt run
-```
+In order to run the application, you need to run the following commands:
 
-And then go to http://localhost:9000 to see the running web application.
+1. Clone the repository
 
-## Controllers
+        git clone https://github.com/sanchezegido/recipedia
+       
+2. Enter project directory
+        
+        cd recipedia
+        
+3. Enter `sbt` console
 
-There are several demonstration files available in this template.
+        ./sbt
+        
+4. Run the application
+        
+        run
 
-- HomeController.java:
+5. And then, open `http://localhost:9000` on your browser to see the running web application.
 
-  Shows how to handle simple HTTP requests.
+## Using the web api
 
-- AsyncController.java:
+Instructions on how to make calls to the api can be found when running `http://localhost:9000` on your web browser.
 
-  Shows how to do asynchronous programming when handling a request.
+> In order for `http://localhost:9000` to work, application must be running
 
-- CountController.java:
+## Authors
 
-  Shows how to inject a component into a controller and use the component when
-  handling requests.
+* [Pablo Sánchez](https://github.com/sanchezegido)
+* [Javier García](https://github.com/pitisflow)
 
-## Components
+## License
 
-- Module.java:
-
-  Shows how to use Guice to bind all the components needed by your application.
-
-- Counter.java:
-
-  An example of a component that contains state, in this case a simple counter.
-
-- ApplicationTimer.java:
-
-  An example of a component that starts when the application starts and stops
-  when the application stops.
-
-## Filters
-
-- ExampleFilter.java
-
-  A simple filter that adds a header to every response.
+This project is licensed under the MIT License - you can do anything but you need to attribute the author.
